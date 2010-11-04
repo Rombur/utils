@@ -1,0 +1,59 @@
+PDT Format Material Data File created Wed Jun 23 16:11:33 2010
+
+This file is a single-group neutron library generated from CX_TEST file BackFaceLinearCB.cx.
+1 temperatures, 1 densities, and 1 groups.
+
+3 neutron process and 1 transfer processes.
+Scattering order 5
+
+Microscopic cross sections are in units of cm^2.
+
+Temperatures in Kelvin:
+            300
+
+Densities in g/cc:
+              0
+
+Group boundaries in eV:
+              3              0
+
+T = 300 density = 0
+---------------------------------------------------
+MT 1
+              132942.209563
+MT 2501, Moment 0
+  Sink, first, last:     0   0   0
+              91049.7834155
+MT 2501, Moment 1
+  Sink, first, last:     0   0   0
+              85185.6221934
+MT 2501, Moment 2
+  Sink, first, last:     0   0   0
+              77315.5788393
+MT 2501, Moment 3
+  Sink, first, last:     0   0   0
+              68536.5960006
+MT 2501, Moment 4
+  Sink, first, last:     0   0   0
+              59458.6992938
+MT 2501, Moment 5
+  Sink, first, last:     0   0   0
+              50448.5437697
+MT 2501, Moment 6
+  Sink, first, last:     0   0   0
+              41731.0685389
+MT 2501, Moment 7
+  Sink, first, last:     0   0   0
+              33442.0720665
+MT 2501, Moment 8
+  Sink, first, last:     0   0   0
+              25658.8902549
+MT 2501, Moment 9
+  Sink, first, last:     0   0   0
+              18419.6814329
+MT 2501, Moment 10
+  Sink, first, last:     0   0   0
+              11736.148758
+MT 2501, Moment 11
+  Sink, first, last:     0   0   0
+              5602.2052756
