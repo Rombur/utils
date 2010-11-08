@@ -19,7 +19,7 @@ test = int(test)
 if test < 1 or test > 9 :
     utils.abort("The test should be between 1 and 9.")
 else :
-    tc = raw_input("Do want to use the transport correction ? ")
+    tc = raw_input("Do you want to use the transport correction ? ")
     if tc in ["true", "True", "1", "y", "yes", "yeah"] :
         tc = True
     else :

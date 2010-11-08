@@ -24,31 +24,31 @@ class rutherford  :
         self.A = 26.98
         self.test = test
         if test == 1 :
-            self.xs_tot = 6.5/5
+            self.xs_tot = 6.5/5.
             self.E = 0.01/0.511
         elif test == 2 :
-            self.xs_tot = 51.5/50
+            self.xs_tot = 51.5/50.
             self.E = 0.1/0.511
         elif test == 3 :
-            self.xs_tot = 501.5/50
+            self.xs_tot = 501.5/50.
             self.E = 1/0.511
         elif test == 4 :
-            self.xs_tot = 13/10
+            self.xs_tot = 13./10.
             self.E = 0.01/0.511
         elif test == 5 :
-            self.xs_tot = 103/100
+            self.xs_tot = 103./100.
             self.E = 0.1/0.511
         elif test == 6 :
-            self.xs_tot = 1003/1000
+            self.xs_tot = 1003./1000.
             self.E = 1/0.511
         elif test == 7 :
-            self.xs_tot = 16/10
+            self.xs_tot = 16./10.
             self.E = 0.01/0.511
         elif test == 8 :
-            self.xs_tot = 106/100
+            self.xs_tot = 106./100.
             self.E = 0.1/0.511
         elif test == 9 :
-            self.xs_tot = 1006/1000
+            self.xs_tot = 1006./1000.
             self.E = 1/0.511
 
 #----------------------------------------------------------------------------#
@@ -65,9 +65,11 @@ class rutherford  :
                 1)**2/(self.E**2*(self.E+2)**2)
         sca_elec = cst/(2*eta*(eta+1))
 
+        print self.xs_tot
 # compute the total cross section
         self.xs_tot = self.xs_tot * sca_elec;
 
+        print self.xs_tot
 # compute the moment of the scattering cross section
         coef = numpy.zeros(self.L_max+2)
         self.xs_sca = numpy.zeros(self.L_max+1)
@@ -87,6 +89,7 @@ class rutherford  :
             self.xs_tot = self.xs_tot - correction
             for i in xrange(0,self.L_max+1) :
                 self.xs_sca[i] = self.xs_sca[i] - correction
+        print self.xs_tot
 
 #----------------------------------------------------------------------------#
 
@@ -100,7 +103,7 @@ class rutherford  :
         elif self.test == 3 :
             self.width = 500*9.5988E-5
         elif self.test == 4 :
-            self.test == 7.1613E-5
+            self.width = 7.1613E-5
         elif self.test == 5 :
             self.width = 3.466E-3
         elif self.test == 6 :
@@ -125,6 +128,12 @@ class rutherford  :
         file = open(filename,'a')
         file.write("MT 1\n")
         line = blank + str(self.xs_tot)+'\n'
+        file.write(line)
+        file.write("MT 1452\n")
+        line = blank + '0' +'\n'
+        file.write(line)
+        file.write("MT 1018\n")
+        line = blank + '0' +'\n'
         file.write(line)
         for i in xrange(0,self.L_max+1) :
             line = MT_2501 + str(i) + '\n'
