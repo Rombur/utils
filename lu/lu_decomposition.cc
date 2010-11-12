@@ -40,7 +40,7 @@ using namespace std;
 
 LU::LU(int n)
 {
-    A.resize(n,vector<double> (n,1.0));
+    A.resize(n,vector<long double> (n,1.0));
     pivot.resize(n,0);
 
     for (int i=0; i<n; i++)
@@ -51,7 +51,7 @@ LU::LU(int n)
 void LU::decomposition()
 {
     const int size(pivot.size());
-    double max;
+    long double max;
 
     // for each row and column
     for (int k=0; k<size; k++)
@@ -90,18 +90,18 @@ void LU::decomposition()
     }
 }
 
-vector<double> LU::solve(vector<double> &b)
+vector<long double> LU::solve(vector<long double> &b)
 {
     // solve the linear equation Lx=b for x where L is a lower triangular
     // matrix
     const int size(pivot.size());
-    vector<double> x(size,0.0);
+    vector<long double> x(size,0.0);
 
     for (int k=0; k<size; k++)
     {
         if (pivot[k] !=k)
         {
-            double tmp(b[k]);
+            long double tmp(b[k]);
             b[k]=b[pivot[k]];
             b[pivot[k]]=tmp;
         }
@@ -117,7 +117,7 @@ vector<double> LU::solve(vector<double> &b)
     {
         if (pivot[k] != k)
         {
-            double tmp(b[k]);
+            long double tmp(b[k]);
             b[k]=b[pivot[k]];
             b[pivot[k]]=tmp;
         }

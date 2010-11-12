@@ -44,11 +44,11 @@ class LU
         LU(int n);
 
         void decomposition();
-        vector<double> solve(vector<double> &b);
+        vector<long double> solve(vector<long double> &b);
 
 //    private :
 
-        vector<vector<double> > A;
+        vector<vector<long double> > A;
         vector<int> pivot;
 
 };

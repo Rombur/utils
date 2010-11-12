@@ -90,10 +90,20 @@ int main()
     int n(3);
     LU lu(n);
 
+    lu.A[0][0] = 1.0;
+    lu.A[0][1] = 1.0;
+    lu.A[0][2] = 1.0+1E-9;
+    lu.A[1][0] = 1.0+1E-9;
+    lu.A[1][1] = 1.0;
+    lu.A[1][2] = 1.0;
+    lu.A[2][0] = 1.0;
+    lu.A[2][1] = 1.0+1E-9;
+    lu.A[2][2] = 1.0;
+
     for (int i=0; i<n;i++)
     {
         for (int j=0; j<n; j++)
-            cout<<lu.A[i][j]<<"\t";
+            cout<<setprecision(12)<<lu.A[i][j]<<"\t";
         cout<<endl;
     }
     cout<<endl;
@@ -110,9 +120,9 @@ int main()
         cout<<lu.pivot[i]<<"\t";
     cout<<endl;
 
-    vector<double> x;
-    vector<double> b;
-    vector<vector<double> > C;
+    vector<long double> x;
+    vector<long double> b;
+    vector<vector<long double> > C;
     for (int i=0; i<n; i++)
     {
         b.resize(n,0.0);
@@ -123,11 +133,11 @@ int main()
     }
 
     cout<<endl;
-    cout<<setw(12);
+    cout<<setw(20);
     for (int i=0; i<n;i++)
     {
         for (int j=0; j<n; j++)
-            cout<<C[j][i]<<setw(12);
+            cout<<setprecision(15)<<C[j][i]<<setw(20);
         cout<<endl;
     }
     cout<<endl;
