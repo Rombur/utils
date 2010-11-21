@@ -47,7 +47,7 @@ class utils  :
                 pos += 1
 # We read the value
             while line[pos] != " " :
-                if line != "\n" :
+                if line[pos] != "\n" :
                     value += line[pos]
                     pos += 1
                 else :
