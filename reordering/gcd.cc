@@ -4,8 +4,8 @@ using namespace std;
 
 int main()
 {
-    int a(30);
-    int b(50);
+    int a(3);
+    int b(0);
 
     int tmp;
     while (b)

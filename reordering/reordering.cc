@@ -127,7 +127,7 @@ void matrix_multiplication(vector<d_matrix> &xs, d_matrix const &permutation_m,
     xs.clear();
     xs.resize(n);
     for (unsigned int i=0; i<n; i++)
-        xs[i].resize(L_max, vector<double> (n,0.0));
+        xs[i].resize(L_max, d_vector (n,0.0));
 
     // R = P^t * XS
     for (unsigned int i=0; i<n; i++)
@@ -137,7 +137,7 @@ void matrix_multiplication(vector<d_matrix> &xs, d_matrix const &permutation_m,
                     xs[i][j][k] += permutation_m[m][i] * result[m][j][k];
 }
 
-d_matrix reordering_linear(vector<d_matrix> &xs, ui_vector &permutation_v,
+void reordering_linear(vector<d_matrix> &xs, ui_vector &permutation_v,
         unsigned int const &n_a,unsigned int const &n_b)
 {
     bool identity(true);
@@ -149,8 +149,6 @@ d_matrix reordering_linear(vector<d_matrix> &xs, ui_vector &permutation_v,
     
     if (!identity)
         matrix_multiplication(xs,permutation_m,n);
-
-    return permutation_m;
 }
 
 void create_log_permutation(d_matrix &permutation_m, ui_vector &permutation_v,
@@ -193,7 +191,7 @@ void create_log_permutation(d_matrix &permutation_m, ui_vector &permutation_v,
     cout<<endl;
 }
 
-d_matrix reordering_log(vector<d_matrix> &xs, ui_vector &permutation_v,
+void reordering_log(vector<d_matrix> &xs, ui_vector &permutation_v,
         unsigned int const &n_a, unsigned int const &n_b)
 {
     const unsigned int n(n_a+n_b);
@@ -203,8 +201,6 @@ d_matrix reordering_log(vector<d_matrix> &xs, ui_vector &permutation_v,
     create_log_permutation(permutation_m,permutation_v,n,n_a,n_b);
     
     matrix_multiplication(xs,permutation_m,n);
-
-    return permutation_m;
 }
 
 template <typename T>
@@ -216,7 +212,7 @@ void print_vector(T const &s)
     cout<<endl;
 }
 
-void mv_multiplication(ui_vector const &permutation_v, d_vector &s)
+void vector_permutation(ui_vector const &permutation_v, d_vector &s)
 {
     d_vector tmp(s);
     const unsigned int n(s.size());
@@ -230,7 +226,6 @@ int main(int argc, char **argv)
     unsigned int n_energy_groups_a(0), n_energy_energy_groups_b(0);
     ui_vector permutation_v;
     d_vector s;
-    d_matrix permutation;
     vector<d_matrix> xs;
     
     read(argv[2],xs,s,n_energy_groups_a,n_energy_energy_groups_b);
@@ -238,11 +233,10 @@ int main(int argc, char **argv)
     print_matrix(xs);
 
     if (strcmp(argv[1],(char*)"linear") == 0)
-        permutation = reordering_linear(xs,permutation_v,n_energy_groups_a, 
+        reordering_linear(xs,permutation_v,n_energy_groups_a,
                 n_energy_energy_groups_b);
     else
-        permutation = reordering_log(xs,permutation_v,n_energy_groups_a, 
-                n_energy_energy_groups_b);
+        reordering_log(xs,permutation_v,n_energy_groups_a,n_energy_energy_groups_b);
 
     print_matrix(xs);
 
@@ -250,7 +244,7 @@ int main(int argc, char **argv)
 
     print_vector(s);
 
-    mv_multiplication(permutation_v,s);
+    vector_permutation(permutation_v,s);
 
     print_vector(permutation_v);
 
