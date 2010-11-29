@@ -7,6 +7,7 @@
 #----------------------------------------------------------------------------#
 
 import numpy as np
+import os.path
 import utils
 
 """This module computes the flux for pdt."""
@@ -38,45 +39,58 @@ class dose :
 
     def read_flux(self) :
         """This function reads the pdt input files and compute the flux the 1D
-        flux. For a given Z the flux is averaged by group.""" 
+        flux. For a given Z, the flux is averaged by group.""" 
 
-        for i in xrange(0,self.n_processors) :
-            file_obj = open(self.filenames+str(i),'r')
-            eof = False
-            while eof == False :
-                line = file_obj.readline()
-                eof = self.utils.search_in_line(line,"TIMING")
-                cell_id = self.utils.search_in_line(line,"cell id,")
-                if cell_id :
+        if not os.path.exists("flux.txt.gz") :
+            for i in xrange(0,self.n_processors) :
+                print "reading file %i"%i
+                file_obj = open(self.filenames+str(i),'r')
+                eof = False
+                while eof == False :
                     line = file_obj.readline()
-                    value,read = self.utils.read_float(line,4)
-                    if read == False :
-                        self.utils.abort(
-                                "Problem while reading the position of the cell.")
-                    if value[1] in self.x_position and value[2] in self.y_position :
-                        flux_pos = 2.0*np.floor(value[3]/self.delta_z)
-                        element = 0
-                        while element < 8 :
-                            line = file_obj.readline()
-                            partial_flux = self.utils.search_in_line(line,
-                                    "flux for element")
-                            if partial_flux == True :
-                                for j in xrange(0,self.n_groups) :
-                                    line = file_obj.readline()
-                                    value,read = self.utils.read_float(line,3)
-                                    if read == False :
-                                        self.utils.abort(
-                                                "Problem while reading the flux")
-                                    if element < 4 :
-                                        self.flux[flux_pos,j] += value[2]/(4.0*
-                                                self.n_cells)
-                                    else :
-                                        self.flux[flux_pos+1,j] += value[2]/(4.0*
-                                                self.n_cells)
-                                    for k in xrange(0,self.n_moments) :
-                                        file_obj.readline();
-                                element += 1
-            file_obj.close()
+                    eof = self.utils.search_in_line(line,"TIMING")
+                    cell_id = self.utils.search_in_line(line,"cell id,")
+                    if cell_id :
+                        line = file_obj.readline()
+                        value,read = self.utils.read_float(line,4)
+                        if read == False :
+                            self.utils.abort(
+                                    "Problem while reading the position of the cell.")
+                        if value[1] in self.x_position and\
+                                value[2] in self.y_position :
+                            flux_pos = 2.0*np.floor(value[3]/self.delta_z)
+                            element = 0
+                            while element < 8 :
+                                line = file_obj.readline()
+                                partial_flux = self.utils.search_in_line(line,
+                                        "flux for element")
+                                if partial_flux == True :
+                                    for j in xrange(0,self.n_groups) :
+                                        line = file_obj.readline()
+                                        value,read = self.utils.read_float(line,3)
+                                        if read == False :
+                                            self.utils.abort(
+                                                    "Problem while reading the flux")
+                                        if element < 4 :
+                                            self.flux[flux_pos,j] += value[2]/(4.0*
+                                                    self.n_cells)
+                                        else :
+                                            self.flux[flux_pos+1,j] += value[2]/(4.0*
+                                                    self.n_cells)
+                                        for k in xrange(0,self.n_moments) :
+                                            file_obj.readline();
+                                    element += 1
+                file_obj.close()
+        else :
+            self.flux = np.loadtxt("flux.txt.gz")
+
+#----------------------------------------------------------------------------#
+
+    def print_flux(self) :
+        """Print the value of the flux to be read faster if we need to read
+        them again."""
+        
+        np.savetxt("flux.txt.gz",self.flux)
 
 #----------------------------------------------------------------------------#
 
@@ -123,7 +137,7 @@ class dose :
                     values,read = self.utils.read_float(line,5)
                     if read == False :
                         self.utils.abort(
-                                "Problem while reading the energy xs for the gammas")
+                                "Problem while reading the energy xs for the electrons")
                     for j in xrange(0,5) :
                         self.e_energy_xs[i*5+j] = values[j]
                 line = file_obj.readline()
@@ -131,7 +145,7 @@ class dose :
                 values,read = self.utils.read_float(line,to_read)
                 if read == False :
                     self.utils.abort(
-                            "Problem while reading the energy xs for the gammas")
+                            "Problem while reading the energy xs for the electrons")
                 for i in xrange(0,to_read) :
                     self.e_energy_xs[n_lines*5+i] = values[i]
 
@@ -142,7 +156,7 @@ class dose :
                     values,read = self.utils.read_float(line,5)
                     if read == False :
                         self.utils.abort(
-                                "Problem while reading the energy xs for the gammas")
+                                "Problem while reading the energy xs for the positrons")
                     for j in xrange(0,5) :
                         self.p_energy_xs[i*5+j] = values[j]
                 line = file_obj.readline()
@@ -150,7 +164,7 @@ class dose :
                 values,read = self.utils.read_float(line,to_read)
                 if read == False :
                     self.utils.abort(
-                            "Problem while reading the energy xs for the gammas")
+                            "Problem while reading the energy xs for the positrons")
                 for i in xrange(0,to_read) :
                     self.p_energy_xs[n_lines*5+i] = values[i]
 
