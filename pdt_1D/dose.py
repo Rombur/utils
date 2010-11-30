@@ -46,12 +46,19 @@ class dose :
                 print "reading file %i"%i
                 file_obj = open(self.filenames+str(i),'r')
                 eof = False
+                cpt = 0
                 while eof == False :
                     line = file_obj.readline()
+                    cpt += 1
+                    if cpt%1000000 == 0 :
+                        print "Reading line %i"%cpt
                     eof = self.utils.search_in_line(line,"TIMING")
+                    if cpt >100000000 :
+                        eof = True
                     cell_id = self.utils.search_in_line(line,"cell id,")
                     if cell_id :
                         line = file_obj.readline()
+                        cpt += 1
                         value,read = self.utils.read_float(line,4)
                         if read == False :
                             self.utils.abort(
@@ -62,11 +69,13 @@ class dose :
                             element = 0
                             while element < 8 :
                                 line = file_obj.readline()
+                                cpt += 1
                                 partial_flux = self.utils.search_in_line(line,
                                         "flux for element")
                                 if partial_flux == True :
                                     for j in xrange(0,self.n_groups) :
                                         line = file_obj.readline()
+                                        cpt += 1
                                         value,read = self.utils.read_float(line,3)
                                         if read == False :
                                             self.utils.abort(
@@ -175,9 +184,9 @@ class dose :
 
         value = 0.0
         
+        pos = 2*int(np.floor(position/self.delta_z))
         for i in xrange(0,self.n_groups) :
-            pos = int(np.floor(position/self.delta_z))
-            flux = self.flux[pos,i] + (position-pos*self.delta_z)/self.delta_z *\
+            flux = self.flux[pos,i] + (position-pos*self.delta_z/2.0)/self.delta_z *\
                     (self.flux[pos+1,i] - self.flux[pos,i])
             if i < self.n_g_groups :
                 value += self.g_energy_xs[i]*flux

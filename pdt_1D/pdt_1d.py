@@ -16,8 +16,8 @@ n_g_groups = 15
 n_e_groups = 25
 n_p_groups = 0
 x_position = [51.25, 53.75] 
-y_position = [51.25, 53.75] 
-n_moments = 120
+y_position = [51.25, 53.75]
+n_moments = 64
 
 pdt = dose.dose(filename, xs_filename, n_processors, n_division_z, delta_z, 
         n_g_groups, n_e_groups, n_p_groups, x_position, y_position, n_moments)
