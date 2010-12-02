@@ -7,18 +7,20 @@
 #----------------------------------------------------------------------------#
 
 import numpy as np
+import gzip
+import pickle
 import os.path
 import utils
 
-"""This module computes the flux for pdt."""
+"""This module computes the dose for pdt."""
 
 class dose :
-    """This class computes the flux given an pdt output file. The beam has to
-    be in the z direction"""
+    """This class computes the dose through the flux given an pdt output file. 
+    The beam has to be along the z direction"""
 
     def __init__(self, filename, xs_filename, n_processors, n_division_z, 
             delta_z, n_g_groups, n_e_groups, n_p_groups,x_position, y_position, 
-            n_moments) :
+            n_moments,moments,groups) :
         self.filenames = filename+".output_"
         self.xs_filename = xs_filename
         self.n_processors = n_processors
@@ -31,9 +33,29 @@ class dose :
         self.x_position = x_position
         self.y_position = y_position
         self.n_moments = n_moments-1
+        self.moments = moments
+        self.groups = groups
         self.n_cells = len(x_position)*len(y_position)
         self.flux = np.zeros((2*n_division_z,self.n_groups))
+        self.moment_flux = np.zeros((2*n_division_z,len(moments),len(groups)))
         self.utils = utils.utils()
+
+#----------------------------------------------------------------------------#
+
+    def read_moments(self,line,moment,group,element,pos) :
+        """This function read the pdt input files and computes some chosen
+        moments."""
+
+        value,read = self.utils.read_float(line,3)
+        if read == False :
+            self.utils.abort("Problem while reading the moments of the flux.")
+        else :
+            mom = self.moments.index(moment)
+            grp = self.groups.index(group)
+            if element < 4 :
+                self.moment_flux[pos,mom,grp] += value[2]/(4.0*self.n_cells)
+            else :
+                self.moment_flux[pos+1,mom,grp] += value[2]/(4.0*self.n_cells)
 
 #----------------------------------------------------------------------------#
 
@@ -46,19 +68,19 @@ class dose :
                 print "reading file %i"%i
                 file_obj = open(self.filenames+str(i),'r')
                 eof = False
-                cpt = 0
+                counter = 0
                 while eof == False :
                     line = file_obj.readline()
-                    cpt += 1
-                    if cpt%1000000 == 0 :
-                        print "Reading line %i"%cpt
+                    counter += 1
+                    if counter%1000000 == 0 :
+                        print "Reading line %i"%counter
                     eof = self.utils.search_in_line(line,"TIMING")
-                    if cpt >100000000 :
+                    if counter > 100000000 :
                         eof = True
                     cell_id = self.utils.search_in_line(line,"cell id,")
                     if cell_id :
                         line = file_obj.readline()
-                        cpt += 1
+                        counter += 1
                         value,read = self.utils.read_float(line,4)
                         if read == False :
                             self.utils.abort(
@@ -69,13 +91,13 @@ class dose :
                             element = 0
                             while element < 8 :
                                 line = file_obj.readline()
-                                cpt += 1
+                                counter += 1
                                 partial_flux = self.utils.search_in_line(line,
                                         "flux for element")
                                 if partial_flux == True :
                                     for j in xrange(0,self.n_groups) :
                                         line = file_obj.readline()
-                                        cpt += 1
+                                        counter += 1
                                         value,read = self.utils.read_float(line,3)
                                         if read == False :
                                             self.utils.abort(
@@ -86,12 +108,24 @@ class dose :
                                         else :
                                             self.flux[flux_pos+1,j] += value[2]/(4.0*
                                                     self.n_cells)
+                                        if 0 in self.moments and j in self.groups :
+                                            self.read_moments(line,0,j,element,
+                                                    flux_pos)
                                         for k in xrange(0,self.n_moments) :
-                                            file_obj.readline();
+                                            line = file_obj.readline();
+                                            counter += 1
+                                            if k+1 in self.moments and\
+                                                    j in self.groups :
+                                                        self.read_moments(line,
+                                                                k+1,j,element,
+                                                                flux_pos)
                                     element += 1
                 file_obj.close()
         else :
             self.flux = np.loadtxt("flux.txt.gz")
+            self.moment_flux = np.loadtxt("moments.txt.gz")
+            self.moment_flux = self.moment_flux.reshape((2*self.n_division_z,
+                len(self.moments),len(self.groups)))
 
 #----------------------------------------------------------------------------#
 
@@ -100,6 +134,22 @@ class dose :
         them again."""
         
         np.savetxt("flux.txt.gz",self.flux)
+
+        outfile = gzip.open("moments.txt.gz",'w')
+# any line starting with # will be ignored by numpy.loadtxt
+# The 0 is because we put there the 0th element of format
+        outfile.write('# array shape : {0}\n'.format(self.moment_flux.shape))
+        for i in xrange(0,len(self.moments)) :
+            np.savetxt(outfile,self.moment_flux[:,i,:])
+# writing out a break to indicate a new moment
+            outfile.write("# New moment\n")
+        outfile.close()
+
+        paramfile = open("parameters.txt","w")
+        out =[self.n_division_z,self.delta_z,len(self.groups),len(self.moments), 
+                self.groups,self.moments]
+        pickle.dump(out,paramfile)
+        paramfile.close()
 
 #----------------------------------------------------------------------------#
 
