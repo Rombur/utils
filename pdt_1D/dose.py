@@ -92,12 +92,16 @@ class dose :
                             while element < 8 :
                                 line = file_obj.readline()
                                 counter += 1
+                                if counter%1000000 == 0 :
+                                    print "Reading line %i"%counter
                                 partial_flux = self.utils.search_in_line(line,
                                         "flux for element")
                                 if partial_flux == True :
                                     for j in xrange(0,self.n_groups) :
                                         line = file_obj.readline()
                                         counter += 1
+                                        if counter%1000000 == 0 :
+                                            print "Reading line %i"%counter
                                         value,read = self.utils.read_float(line,3)
                                         if read == False :
                                             self.utils.abort(
@@ -114,6 +118,8 @@ class dose :
                                         for k in xrange(0,self.n_moments) :
                                             line = file_obj.readline();
                                             counter += 1
+                                            if counter%1000000 == 0 :
+                                                print "Reading line %i"%counter
                                             if k+1 in self.moments and\
                                                     j in self.groups :
                                                         self.read_moments(line,
