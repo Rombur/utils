@@ -14,53 +14,56 @@ template <typename number>
 class lipschitz
 {
   public :
-    lipschitz(int lvl, int dim);
-    void mapd(number const &x, vector<number> &y, type key);
-    void node(number i);
+    lipschitz(unsigned int lvl, unsigned int dim, type KEY);
+    void mapd(number const &x, vector<number> &y);
     void invmad(vector<number> & xp, int & kxx, vector<number> &p, 
         int incr);
-    void xyd(number &xx, vector<number> &y);
-    void numbr(int &iss);
 
   private :
-    int level;
-    int dimension;
-    int l;
-    int n_exp;
-    int iq;   // unsigned int ?
+    const unsigned int level;
+    const unsigned int dimension;
+    unsigned int l;
+    unsigned int n_exp;
+    int iq;   
+    type key;
     number del;
     vector<number> iu;
     vector<number> iv;
+
+    void node(number i);
+    void xyd(number &xx, vector<number> &y);
+    void numbr(int &iss);
 };
 
 template <typename number>
-lipschitz<number>::lipschitz(int lvl, int dim) : 
+lipschitz<number>::lipschitz(unsigned int lvl, unsigned int dim, type KEY) : 
   level(lvl),
   dimension(dim),
+  n_exp(pow(2,dim)),
+  key(KEY),
   iu(dim,0.0),
   iv(dim,0.0)
   {}
 
 template <typename number>
-void lipschitz<number>::mapd(number const &x, vector<number> &y, type key)
+void lipschitz<number>::mapd(number const &x, vector<number> &y)
 {
-  int n1 = dimension-1;
+  unsigned int n1(dimension-1);
+  unsigned int it(0);
+  unsigned int k(0);
+  unsigned int is;
+  int i; 
   number p(0.0);
-  //n_exp = 2^dimension
-  n_exp = pow(2.0,dimension);
   number d(x);
   number r=0.5;
-  int it(0);
   number dr(n_exp);
-  // mne = dr^level
   number mne(pow(dr,level));
+  number dd;
+  const number one(1.0);
   vector<int> iw(dimension,1);
+
   y.clear();
   y.resize(dimension,0.0);
-  int k(0);
-  number dd;
-  int is;
-  int i; // int PAS unsigned
 
   switch (key) 
   {
@@ -68,28 +71,28 @@ void lipschitz<number>::mapd(number const &x, vector<number> &y, type key)
       break;
 
     case lines :
-      d = d*(1.0-1.0/mne);
+      d = d*(one-one/mne);
       k = 0;
       break;
 
     case nodes :
       dr = mne/n_exp;
-      dr = dr - fmod(dr,1.0);
+      dr = dr - fmod(dr,one);
       dd = mne - dr;
       dr = d*dd;
-      dd = dr - fmod(dr,1.0);
-      dr = dd + (dd-1.0)/(n_exp-1.0);
-      dd = dr - fmod(dr,1.0);
-      d = dd*(1./mne);
+      dd = dr - fmod(dr,one);
+      dr = dd + (dd-one)/(n_exp-one);
+      dd = dr - fmod(dr,one);
+      d = dd*(one/mne);
   }
 
-  for (int j=0; j<level; ++j)
+  for (unsigned int j=0; j<level; ++j)
   {
-    iq = 0.0;
-    if (x == 1.0)
+    iq = 0;
+    if (x == one)
     {
       is = n_exp - 1;
-      d = 0.0;
+      d = one;
     }
     else
     {
@@ -121,7 +124,7 @@ void lipschitz<number>::mapd(number const &x, vector<number> &y, type key)
 
     r = r/2.0;
     it = l;
-    for (int kk=0; kk<dimension; ++kk)
+    for (unsigned int kk=0; kk<dimension; ++kk)
     {
       iu[kk] = iu[kk]*iw[kk];
       iw[kk] = -iv[kk]*iw[kk];
@@ -143,7 +146,7 @@ void lipschitz<number>::mapd(number const &x, vector<number> &y, type key)
   }
   else if (key == nodes)
   {
-    for (int kk=0; kk<dimension; ++kk)
+    for (unsigned int kk=0; kk<dimension; ++kk)
     {
       p = r*iu[kk];
       p += y[kk];
@@ -155,13 +158,12 @@ void lipschitz<number>::mapd(number const &x, vector<number> &y, type key)
 template<typename number>
 void lipschitz<number>::node(number is)
 {
-  int iff;
-  int k1,k2,j;
+  int iff,k1,k2,j;
 
   if (is == 0)
   {
     l = dimension - 1.0;
-    for (int i=0; i<dimension; ++i)
+    for (unsigned int i=0; i<dimension; ++i)
     {
       iu[i] = -1.0;
       iv[i] = -1.0;
@@ -172,7 +174,7 @@ void lipschitz<number>::node(number is)
     l = dimension - 1.0;
     iu[0] = 1.0;
     iv[0] = 1.0;
-    for (int i=1; i<dimension; ++i)
+    for (unsigned int i=1; i<dimension; ++i)
     {
       iu[i] = -1.0;
       iv[i] = -1.0;
@@ -183,7 +185,7 @@ void lipschitz<number>::node(number is)
   {
     iff = n_exp;
     k1 = -1;
-    for (int i=0; i<dimension; ++i)
+    for (unsigned int i=0; i<dimension; ++i)
     {
       iff /= 2.0;
       if (is >= iff)
@@ -226,45 +228,45 @@ void lipschitz<number>::invmad(vector<number> & xp, int & kxx,
    *  - p = images for which preimages are calculated
    *  - incr = minimum number of map nodes that must bebetween preimages
    */ 
-  number mne, d1, dd, x, dr;
-  double r,d;
-  vector<double> u(dimension,-1.0);
-  vector<double> y(dimension,0.0);
-  int kx;
+  int kx(0);
   int k;
   int i;
+  int dim(dimension);
   int kp = xp.size()-1;
-  kx = 0;
-  n_exp = pow(2,dimension);
-  dr = n_exp;
-  mne =1;
-  r =0.5;
-  for (i=0; i<level; ++i)
+  const number one(1.0);
+  number d1,dd,x,d;
+  number dr(n_exp);
+  number mne(one);
+  number r(0.5);
+  vector<number> u(dimension,-1.0);
+  vector<number> y(dimension,0.0);
+
+  for (i=0; i<int(level); ++i)
   {
     mne *= dr;
     r *= 0.5;
   }
   dr = mne/n_exp;
-  dr = dr -fmod(dr,1.0);
-  del = 1./(mne-dr);
+  dr = dr -fmod(dr,one);
+  del = one/(mne-dr);
   d1 = del*(incr+0.5);
 
   kx =-1;
   while (kx < kp)
   {
-    for (i=0; i<dimension; ++i)
+    for (unsigned int ii=0; ii<dimension; ++ii)
     {
-      d = p[i];
-      y[i] = d -r*u[i];
+      d = p[ii];
+      y[ii] = d -r*u[ii];
     }
-    for (i=0; (i<dimension) && (fabs(y[i]) < 0.5); ++i); // ????
-    if (i>= dimension) 
+    for (i=0; (i<dim) && (fabs(y[i]) < 0.5); ++i);
+    if (i>= dim) 
     {
       xyd(x,y);
       dr =x*mne;
-      dd = dr- fmod(dr,1.0);
+      dd = dr- fmod(dr,one);
       dr = dd /n_exp;
-      dd = dd -dr + fmod(dr,1.0);
+      dd = dd -dr + fmod(dr,one);
       x = dd*del;
       if (kx > kp) 
         break;
@@ -273,13 +275,15 @@ void lipschitz<number>::invmad(vector<number> & xp, int & kxx,
         xp[0] = x;
       else
       {
-        while (k>=0)
+        bool m6(false);
+        while (k>=0 && !m6)
         {
           dr = fabs(x-xp[k]);
           if (dr <= d1)
           {
-            for (kx--; k<kx; k++,xp[k]=xp[k+1]);
-            goto m6;
+            for (kx--; k<kx; k++)
+              xp[k+1] = xp[k+2];
+            m6 = true;
           }
           else
             if (x<=xp[k])
@@ -290,12 +294,13 @@ void lipschitz<number>::invmad(vector<number> & xp, int & kxx,
             else
               break;
         }
-        xp[k+1] = x;
+        if(!m6)
+          xp[k+1] = x;
       }
     }
-m6 : for (i=dimension-1; (i>=0) && (u[i]=(u[i]<=0.0) ? 1 : -1)<0; --i);
-     if (i<0)
-       break;
+    for (i=dimension-1; (i>=0) && (u[i]=(u[i]<=0.0) ? 1 : -1)<0; --i);
+    if (i<0)
+      break;
   }
   kxx = ++kx;
 }
@@ -304,27 +309,25 @@ template <typename number>
 void lipschitz<number>::xyd(number &xx, vector<number> &y)
 {
   /**
-   * Calcuate preimage xx for the nearest m-level center of y (xx - left boundary 
+   * Calculate preimage xx for the nearest m-level center of y (xx - left boundary 
    * point of m-level interval)
    */
 
-  number x, r1;
-  double r;
-  vector<int> iw(10,1);
-  int i,j,it,is;
+  unsigned int it(0);
+  int i,is;
+  number r(0.5);
+  number r1(1.0);
+  number x(0.0);
+  vector<int> iw(dimension,1);
 
-  r =0.5;
-  r1 =1.0;
-  x = 0.0;
-  it =0;
-  for (j=0; j<level; j++)
+  for (unsigned int j=0; j<level; j++)
   {
     r*=0.5;
-    for (i=0; i<dimension; ++i)
+    for (unsigned int ii=0; ii<dimension; ++ii)
     {
-      iu[i] = (y[i]<0) ? -1 : 1;
-      y[i] -=r*iu[i];
-      iu[i] *=iw[i];
+      iu[ii] = (y[ii]<0) ? -1 : 1;
+      y[ii] -=r*iu[ii];
+      iu[ii] *=iw[ii];
     }
     i = iu[0];
     iu[0] = iu[it];
@@ -333,8 +336,8 @@ void lipschitz<number>::xyd(number &xx, vector<number> &y)
     i=iv[0];
     iv[0] = iv[it];
     iv[it] = i;
-    for (i=0; i<dimension; ++i)
-      iw[i] = -iw[i]*iv[i];
+    for (unsigned int ii=0; ii<dimension; ++ii)
+      iw[ii] = -iw[ii]*iv[ii];
     if (l==0)
       l=it;
     else if (l==it)
@@ -352,12 +355,13 @@ void lipschitz<number>::numbr(int &iss)
   /**
    * calculate s(u) = is, l(u), v(u) =iv by u=iu
    */
-  int i,is,iff,k1,k2,l1;
+  unsigned int l1;
+  unsigned int is(0);
+  int k2;
+  int k1(-1);
+  int iff(n_exp);
 
-  is =0;
-  k1=-1;
-  iff = n_exp;
-  for (i=0; i<dimension; ++i)
+  for (unsigned int i=0; i<dimension; ++i)
   {
     iff = iff/2;
     k2 =-k1*iu[i];
@@ -390,27 +394,27 @@ void lipschitz<number>::numbr(int &iss)
 int main(int argc, char* argv[])
 {
 
-  int n=2;
-  int m=10;
-  vector<double> y;
-  double x(0.5);
-  lipschitz<double> l(m,n);
+  unsigned int n=2;
+  unsigned int m=10;
+  vector<long double> y;
+  long double x(0.5);
   type t(nodes);
+  lipschitz<long double> l(m,n,t);
 
-  l.mapd(x,y,t);
+  l.mapd(x,y);
 
-  for (int i=0; i<n; ++i)
+  for (unsigned int i=0; i<n; ++i)
     cout<<y[i]<<endl;
   cout<<endl;
 
-  vector<double> xp(4,0.0);
+  vector<long double> xp(4,0.0);
 
   int kx = 4;
   l.invmad(xp,kx,y,1);
 
   cout<<"kx "<<kx<<endl;
-  vector<double>::iterator end(xp.end());
-  vector<double>::iterator xp_val(xp.begin());
+  vector<long double>::iterator end(xp.end());
+  vector<long double>::iterator xp_val(xp.begin());
   for ( ; xp_val<end; xp_val++)
   {
     cout<<*xp_val<<endl;
@@ -421,10 +425,10 @@ int main(int argc, char* argv[])
   n = 3;
   x = 0.55;
 
-  lipschitz<double> l2(m,n);
-  l2.mapd(x,y,t);
+  lipschitz<long double> l2(m,n,t);
+  l2.mapd(x,y);
 
-  for (int i=0; i<n; ++i)
+  for (unsigned int i=0; i<n; ++i)
     cout<<y[i]<<endl;
 
   xp.clear();
