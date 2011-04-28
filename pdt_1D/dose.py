@@ -9,6 +9,7 @@
 import numpy as np
 import gzip
 import pickle
+import pylab
 import os.path
 import utils
 
@@ -20,7 +21,7 @@ class dose :
 
     def __init__(self, filename, xs_filename, n_processors, n_division_z, 
             delta_z, n_g_groups, n_e_groups, n_p_groups,x_position, y_position, 
-            n_moments,moments,groups) :
+            z_position, n_moments, moments,groups) :
         self.filenames = filename+".output_"
         self.xs_filename = xs_filename
         self.n_processors = n_processors
@@ -32,11 +33,13 @@ class dose :
         self.n_groups = n_g_groups+n_e_groups+n_p_groups
         self.x_position = x_position
         self.y_position = y_position
+        self.z_position = z_position
         self.n_moments = n_moments-1
         self.moments = moments
         self.groups = groups
         self.n_cells = len(x_position)*len(y_position)
         self.flux = np.zeros((2*n_division_z,self.n_groups))
+        self.dose = np.zeros(2*n_division_z)
         self.moment_flux = np.zeros((2*n_division_z,len(moments),len(groups)))
         self.utils = utils.utils()
 
@@ -92,12 +95,16 @@ class dose :
                             while element < 8 :
                                 line = file_obj.readline()
                                 counter += 1
+                                if counter%1000000 == 0 :
+                                    print "Reading line %i"%counter
                                 partial_flux = self.utils.search_in_line(line,
                                         "flux for element")
                                 if partial_flux == True :
                                     for j in xrange(0,self.n_groups) :
                                         line = file_obj.readline()
                                         counter += 1
+                                        if counter%1000000 == 0 :
+                                            print "Reading line %i"%counter
                                         value,read = self.utils.read_float(line,3)
                                         if read == False :
                                             self.utils.abort(
@@ -114,6 +121,8 @@ class dose :
                                         for k in xrange(0,self.n_moments) :
                                             line = file_obj.readline();
                                             counter += 1
+                                            if counter%1000000 == 0 :
+                                                print "Reading line %i"%counter
                                             if k+1 in self.moments and\
                                                     j in self.groups :
                                                         self.read_moments(line,
@@ -246,3 +255,140 @@ class dose :
                 value += self.p_energy_xs[i-self.n_g_groups-self.n_e_groups]*\
                         flux
         print value
+
+#----------------------------------------------------------------------------#
+
+    def read_dose(self) :
+        """Read the dose in the input file."""
+
+
+        if not os.path.exists("dose.txt.gz") :
+            for i in xrange(0,self.n_processors) :
+                print "reading file %i"%i
+                file_obj = open(self.filenames+str(i),'r')
+                eof = False
+                counter = 0
+                while eof == False :
+                    line = file_obj.readline()
+                    counter += 1
+                    if counter%1000000 == 0 :
+                        print "Reading line %i"%counter
+                    eof = self.utils.search_in_line(line,"TIMING")
+                    if counter > 500000000 :
+                        eof = True
+                    cell_id = self.utils.search_in_line(line,"cell id,")
+                    if cell_id :
+                        line = file_obj.readline()
+                        counter += 1
+                        value,read = self.utils.read_float(line,4)
+                        if read == False :
+                            self.utils.abort(
+                                    "Problem while reading the position of the cell.")
+                        if not self.x_position :
+                            if value[2] in self.y_position and\
+                                    value[3] in self.z_position :
+                                dose_pos = 2.0*np.floor(value[1]/self.delta_z)
+                                element = 0
+                                while element < 8 :
+                                    line = file_obj.readline()
+                                    counter += 1
+                                    if counter%1000000 == 0 :
+                                        print "Reading line %i"%counter
+                                    partial_dose = self.utils.search_in_line(line,"dose for element")
+                                    if partial_dose == True :
+                                        line = file_obj.readline()
+                                        counter += 1
+                                        if counter%1000000 == 0 :
+                                            print "Reading line %i"%counter
+                                        value,read = self.utils.read_float(line,1)
+                                        if read == False :
+                                            self.utils.abort("Problem while reading the dose")
+                                        if element < 4 :
+                                            self.dose[dose_pos] += value[0]/(4.0*self.n_cells)
+                                        else :
+                                            self.dose[dose_pos+1] += value[0]/(4.0*self.n_cells)
+                                        element += 1
+                        if not self.y_position :
+                            if value[1] in self.x_position and\
+                                    value[3] in self.z_position :
+                                dose_pos = 2.0*np.floor(value[2]/self.delta_z)
+                                element = 0
+                                while element < 8 :
+                                    line = file_obj.readline()
+                                    counter += 1
+                                    if counter%1000000 == 0 :
+                                        print "Reading line %i"%counter
+                                    partial_dose = self.utils.search_in_line(line,"dose for element")
+                                    if partial_dose == True :
+                                        line = file_obj.readline()
+                                        counter += 1
+                                        if counter%1000000 == 0 :
+                                            print "Reading line %i"%counter
+                                        value,read = self.utils.read_float(line,1)
+                                        if read == False :
+                                            self.utils.abort("Problem while reading the dose")
+                                        if element < 4 :
+                                            self.dose[dose_pos] += value[0]/(4.0*self.n_cells)
+                                        else :
+                                            self.dose[dose_pos+1] += value[0]/(4.0*self.n_cells)
+                                        element += 1
+                        if not self.z_position :
+                            if value[1] in self.x_position and\
+                                    value[2] in self.y_position :
+                                dose_pos = 2.0*np.floor(value[3]/self.delta_z)
+                                element = 0
+                                while element < 8 :
+                                    line = file_obj.readline()
+                                    counter += 1
+                                    if counter%1000000 == 0 :
+                                        print "Reading line %i"%counter
+                                    partial_dose = self.utils.search_in_line(line,"dose for element")
+                                    if partial_dose == True :
+                                        line = file_obj.readline()
+                                        counter += 1
+                                        if counter%1000000 == 0 :
+                                            print "Reading line %i"%counter
+                                        value,read = self.utils.read_float(line,1)
+                                        if read == False :
+                                            self.utils.abort("Problem while reading the dose")
+                                        if element < 4 :
+                                            self.dose[dose_pos] += value[0]/(4.0*self.n_cells)
+                                        else :
+                                            self.dose[dose_pos+1] += value[0]/(4.0*self.n_cells)
+                                        element += 1
+                file_obj.close()
+        else :
+            self.dose = np.loadtxt("dose.txt.gz")
+
+#----------------------------------------------------------------------------#
+
+    def print_dose(self) :
+        """Print the dose in a file."""
+        
+        np.savetxt("dose.txt.gz",self.dose)
+
+#----------------------------------------------------------------------------#
+
+    def reconstruct_dose(self,position,dose2plot) :
+        """Reconstruct the dose."""
+
+        pos = 2*int(np.floor(position/self.delta_z))
+        value = dose2plot[pos]+(position-pos*self.delta_z/2.0)/self.delta_z*\
+                (dose2plot[pos+1] - dose2plot[pos])
+        return value
+
+#----------------------------------------------------------------------------#
+
+    def plot_dose(self) :
+        """Plot the dose."""
+        
+        dose2plot = np.loadtxt("dose.txt.gz")
+        x_max = self.n_division_z * self.delta_z
+        x = np.arange(0.0,x_max,x_max/100.0)
+        y = np.zeros_like(x)
+        for i in xrange(0,100) :    
+            y[i]=self.reconstruct_dose(x[i],dose2plot)
+        pylab.figure()
+        pylab.plot(x,y)
+        pylab.savefig("dose.eps")
+        pylab.savefig("dose.png")
