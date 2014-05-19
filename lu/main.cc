@@ -90,15 +90,15 @@ int main()
     int n(3);
     LU lu(n);
 
-    lu.A[0][0] = 1.0;
-    lu.A[0][1] = 1.0;
-    lu.A[0][2] = 1.0+1E-9;
-    lu.A[1][0] = 1.0+1E-9;
-    lu.A[1][1] = 1.0;
-    lu.A[1][2] = 1.0;
-    lu.A[2][0] = 1.0;
-    lu.A[2][1] = 1.0+1E-9;
-    lu.A[2][2] = 1.0;
+    lu.A[0][0] = 1.;
+    lu.A[0][1] = 1.;
+    lu.A[0][2] = 1.;
+    lu.A[1][0] = 1.;
+    lu.A[1][1] = 2.;
+    lu.A[1][2] = 2.;
+    lu.A[2][0] = 1.;
+    lu.A[2][1] = 3.;
+    lu.A[2][2] = 4.;
 
     for (int i=0; i<n;i++)
     {
@@ -112,7 +112,7 @@ int main()
     for (int i=0; i<n;i++)
     {
         for (int j=0; j<n; j++)
-            cout<<lu.A[i][j]<<setw(12);
+            cout<<lu.A[i][j]<<setw(12)<<"\t";
         cout<<endl;
     }
     cout<<endl;

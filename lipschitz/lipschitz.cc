@@ -223,10 +223,10 @@ void lipschitz<number>::invmad(vector<number> & xp, int & kxx,
 {
   /**
    * Preimages calculation :
-   *  - xp = preimages ti be calculated
+   *  - xp = preimages to be calculated
    *  - kxx = number of preimages being caculated
    *  - p = images for which preimages are calculated
-   *  - incr = minimum number of map nodes that must bebetween preimages
+   *  - incr = minimum number of map nodes that must be between preimages
    */ 
   int kx(0);
   int k;

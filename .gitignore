@@ -1,0 +1,13 @@
+*.pyc
+*.o
+input_cepxs.*
+*.data
+*.swp
+*.txt
+*.gz
+*.png
+*.eps
+*.output_*
+*.npz
+*.un~
+*.pckl
